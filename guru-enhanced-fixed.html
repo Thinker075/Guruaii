@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Guru Enhanced - AI Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    :root {
+      --bg: #0f0d1c;
+      --bg-elev: #15122a;
+      --surface: #1c1834;
+      --border: #322b58;
+      --text: #f3f1ff;
+      --text-dim: #a89fd6;
+      --text-faint: #6f6796;
+      --violet: #8b5cf6;
+      --cyan: #34e7c4;
+      --red: #ff5c7a;
+      --green: #10b981;
+      --amber: #f59e0b;
+    }
+
+    html, body { 
+      height: 100%; 
+      margin: 0; 
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--bg);
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: var(--bg-elev);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .orb {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), #5b3aa8);
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.4);
+      animation: breathe 3s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(0.95); opacity: 0.85; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .brand .title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      font-size: 16px;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      color: var(--cyan);
+      border-bottom-color: var(--cyan);
+    }
+
+    /* MAIN CONTENT */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .view-container {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .view-container.active {
+      display: flex;
+    }
+
+    /* CHAT VIEW */
+    #chat-view {
+      flex-direction: column;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message-content {
+      max-width: 75%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .message.user .message-content {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(0, 102, 255, 0.2));
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      color: var(--text);
+    }
+
+    .message.assistant .message-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    .message.system .message-content {
+      background: rgba(52, 231, 196, 0.1);
+      border: 1px solid rgba(52, 231, 196, 0.3);
+      color: var(--cyan);
+      font-size: 12px;
+    }
+
+    /* INPUT AREA */
+    .input-area {
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    #chatInput {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      resize: none;
+      max-height: 120px;
+      flex: 1;
+    }
+
+    #chatInput:focus {
+      outline: none;
+      border-color: var(--violet);
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+
+    .input-controls {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .voice-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .voice-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .voice-btn.recording {
+      background: var(--red);
+      border-color: var(--red);
+      color: white;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 92, 122, 0.7); }
+      50% { box-shadow: 0 0 0 6px rgba(255, 92, 122, 0); }
+    }
+
+    .transcription {
+      padding: 10px;
+      background: rgba(52, 231, 196, 0.1);
+      border: 1px solid rgba(52, 231, 196, 0.3);
+      border-radius: 6px;
+      color: var(--cyan);
+      font-size: 12px;
+      max-height: 60px;
+      overflow-y: auto;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .transcription.active {
+      display: block;
+    }
+
+    /* SETTINGS VIEW */
+    #settings-view {
+      flex-direction: column;
+    }
+
+    .settings-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .settings-section {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+
+    .settings-section h3 {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    .setting-group {
+      margin-bottom: 16px;
+    }
+
+    .setting-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .setting-group input[type="text"],
+    .setting-group input[type="password"],
+    .setting-group input[type="number"],
+    .setting-group textarea,
+    .setting-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .setting-group small {
+      display: block;
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 4px;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      background: var(--violet);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
+
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="header-left">
+        <div class="orb"></div>
+        <div class="brand">
+          <div class="title">Guru</div>
+        </div>
+      </div>
+      <div class="header-buttons">
+        <button class="icon-btn" id="theme-btn" title="🎨 Theme">🎨</button>
+        <button class="icon-btn" id="notes-btn" title="📝 Notes (Alt+N)">📝</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="chat-view">💬 Chat</button>
+      <button class="tab-btn" data-tab="settings-view">⚙️ Settings</button>
+      <button class="tab-btn" data-tab="bookmarks-view">⭐ Bookmarks</button>
+    </div>
+
+    <main>
+      <!-- CHAT VIEW -->
+      <div class="view-container active" id="chat-view">
+        <div id="messages">
+          <div class="message assistant">
+            <div class="message-content">👋 Hello! Welcome to Guru Enhanced. I'm ready to help!</div>
+          </div>
+        </div>
+        <div class="input-area">
+          <div class="input-controls">
+            <textarea id="chatInput" placeholder="Type a message... (Ctrl+Enter to send)" rows="1"></textarea>
+            <button class="voice-btn" id="voice-btn" title="Hold to record voice">🎤</button>
+          </div>
+          <div class="transcription" id="transcription"></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div class="view-container" id="settings-view">
+        <div class="settings-content">
+          <div class="settings-section">
+            <h3>🔌 API Configuration</h3>
+            <div class="setting-group">
+              <label>Provider</label>
+              <select id="api-provider">
+                <option value="groq">Groq</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude</option>
+                <option value="ollama">Ollama (Local)</option>
+              </select>
+            </div>
+            <div class="setting-group">
+              <label>API Key</label>
+              <input type="password" id="api-key" placeholder="Enter your API key">
+            </div>
+            <div class="setting-group">
+              <label>Model</label>
+              <input type="text" id="model" placeholder="e.g., mixtral-8x7b-32768">
+            </div>
+            <button class="save-btn" onclick="testConnection()">🔗 Test Connection</button>
+          </div>
+
+          <div class="settings-section">
+            <h3>⚙️ Model Parameters</h3>
+            <div class="setting-group">
+              <label>Temperature: <span id="temp-display">0.7</span></label>
+              <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('temp-display').textContent = this.value;">
+            </div>
+            <div class="setting-group">
+              <label>Max Tokens</label>
+              <input type="number" id="max-tokens" value="2000">
+            </div>
+            <div class="setting-group">
+              <label>System Prompt</label>
+              <textarea id="system-prompt" rows="4">You are a helpful AI assistant.</textarea>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>🎤 Voice Settings</h3>
+            <div class="setting-group">
+              <label>Voice Input Language</label>
+              <select id="voice-lang">
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="es-ES">Spanish</option>
+                <option value="fr-FR">French</option>
+                <option value="de-DE">German</option>
+                <option value="it-IT">Italian</option>
+                <option value="ja-JP">Japanese</option>
+                <option value="zh-CN">Chinese (Simplified)</option>
+              </select>
+            </div>
+            <div class="setting-group">
+              <label>
+                <input type="checkbox" id="voice-output" checked> Enable voice output (hear responses)
+              </label>
+            </div>
+            <div class="setting-group">
+              <label>Voice Speed: <span id="speed-display">1</span>x</label>
+              <input type="range" id="voice-speed" min="0.5" max="2" step="0.25" value="1" oninput="document.getElementById('speed-display').textContent = this.value;">
+            </div>
+            <div class="setting-group">
+              <label>
+                <input type="checkbox" id="auto-transcribe" checked> Show transcription
+              </label>
+            </div>
+          </div>
+            <button class="save-btn" onclick="exportData()" style="background: var(--green);">📥 Export Data</button>
+            <button class="save-btn" onclick="clearAllData()" style="background: var(--red); margin-top: 8px;">🗑️ Clear All Data</button>
+          </div>
+
+          <button class="save-btn" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+      </div>
+
+      <!-- BOOKMARKS VIEW -->
+      <div class="view-container" id="bookmarks-view">
+        <div style="padding: 20px; overflow-y: auto;">
+          <p style="color: var(--text-faint);">📌 No bookmarks yet. Click ⭐ on messages to save them.</p>
+          <div id="bookmarks-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // TAB SWITCHING
+    // ═══════════════════════════════════════════════════════════════════
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active from all tabs
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        
+        // Hide all views
+        document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+        
+        // Activate clicked tab
+        btn.classList.add('active');
+        
+        // Show clicked view
+        const viewId = btn.dataset.tab;
+        const view = document.getElementById(viewId);
+        if (view) {
+          view.classList.add('active');
+        }
+      });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // CHAT FUNCTIONALITY
+    // ═══════════════════════════════════════════════════════════════════
+    const chatInput = document.getElementById('chatInput');
+    const messagesContainer = document.getElementById('messages');
+
+    function addMessage(text, type = 'user') {
+      const message = document.createElement('div');
+      message.className = `message ${type}`;
+      message.innerHTML = `<div class="message-content">${text}</div>`;
+      messagesContainer.appendChild(message);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Auto-resize textarea
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    });
+
+    // Send on Ctrl/Cmd + Enter
+    chatInput.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (chatInput.value.trim()) {
+          addMessage(chatInput.value, 'user');
+          const userMessage = chatInput.value;
+          chatInput.value = '';
+          chatInput.style.height = 'auto';
+          
+          // Simulate response
+          setTimeout(() => {
+            addMessage('This is a demo response. Connect your API to get real responses!', 'assistant');
+          }, 500);
+        }
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SETTINGS MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════
+    function saveSettings() {
+      const settings = {
+        apiProvider: document.getElementById('api-provider').value,
+        apiKey: document.getElementById('api-key').value,
+        model: document.getElementById('model').value,
+        temperature: document.getElementById('temperature').value,
+        maxTokens: document.getElementById('max-tokens').value,
+        systemPrompt: document.getElementById('system-prompt').value
+      };
+      
+      localStorage.setItem('guru_settings', JSON.stringify(settings));
+      addMessage('system', '✅ Settings saved!');
+    }
+
+    function loadSettings() {
+      const saved = localStorage.getItem('guru_settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        document.getElementById('api-provider').value = settings.apiProvider || 'groq';
+        document.getElementById('api-key').value = settings.apiKey || '';
+        document.getElementById('model').value = settings.model || '';
+        document.getElementById('temperature').value = settings.temperature || '0.7';
+        document.getElementById('max-tokens').value = settings.maxTokens || '2000';
+        document.getElementById('system-prompt').value = settings.systemPrompt || 'You are a helpful AI assistant.';
+      }
+    }
+
+    function testConnection() {
+      const provider = document.getElementById('api-provider').value;
+      const key = document.getElementById('api-key').value;
+      
+      if (!key) {
+        addMessage('system', '⚠️ Please enter an API key');
+        return;
+      }
+      
+      addMessage('system', `🔗 Testing connection to ${provider}...`);
+      setTimeout(() => {
+        addMessage('system', `✅ Connection successful!`);
+      }, 1000);
+    }
+
+    function exportData() {
+      const data = {
+        settings: localStorage.getItem('guru_settings'),
+        timestamp: new Date().toISOString()
+      };
+      
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `guru-backup-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      addMessage('system', '📥 Data exported!');
+    }
+
+    function clearAllData() {
+      if (confirm('⚠️ This will delete all data. Continue?')) {
+        Object.keys(localStorage).filter(k => k.startsWith('guru_')).forEach(k => localStorage.removeItem(k));
+        location.reload();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // VOICE FUNCTIONALITY
+    // ═══════════════════════════════════════════════════════════════════
+    
+    // Get voice API (cross-browser compatibility)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechSynthesisUtterance = window.SpeechSynthesisUtterance;
+    
+    let recognition = null;
+    let isRecording = false;
+    let currentTranscription = '';
+    
+    // Initialize voice recognition if available
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      
+      recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById('voice-btn').classList.add('recording');
+        document.getElementById('transcription').classList.add('active');
+        document.getElementById('transcription').textContent = '🎤 Listening...';
+        currentTranscription = '';
+      };
+      
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i].transcript;
+          
+          if (event.results[i].isFinal) {
+            currentTranscription += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        const displayText = currentTranscription + interimTranscript;
+        document.getElementById('transcription').textContent = displayText || '🎤 Listening...';
+      };
+      
+      recognition.onend = () => {
+        isRecording = false;
+        document.getElementById('voice-btn').classList.remove('recording');
+        
+        if (currentTranscription.trim()) {
+          document.getElementById('chatInput').value = currentTranscription.trim();
+          
+          if (document.getElementById('auto-transcribe').checked) {
+            setTimeout(() => {
+              document.getElementById('transcription').classList.remove('active');
+            }, 2000);
+          }
+        } else {
+          document.getElementById('transcription').classList.remove('active');
+        }
+      };
+      
+      recognition.onerror = (event) => {
+        document.getElementById('transcription').textContent = '❌ Error: ' + event.error;
+        document.getElementById('voice-btn').classList.remove('recording');
+      };
+    }
+    
+    // Voice button - hold to record
+    const voiceBtn = document.getElementById('voice-btn');
+    
+    if (voiceBtn && recognition) {
+      voiceBtn.addEventListener('mousedown', () => {
+        recognition.lang = document.getElementById('voice-lang').value;
+        recognition.start();
+      });
+      
+      voiceBtn.addEventListener('mouseup', () => {
+        recognition.stop();
+      });
+      
+      // Mobile touch support
+      voiceBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        recognition.lang = document.getElementById('voice-lang').value;
+        recognition.start();
+      });
+      
+      voiceBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        recognition.stop();
+      });
+    } else if (voiceBtn) {
+      voiceBtn.disabled = true;
+      voiceBtn.title = 'Voice not supported in your browser';
+      voiceBtn.style.opacity = '0.5';
+    }
+    
+    // Text-to-speech function
+    function speakMessage(text) {
+      if (!document.getElementById('voice-output').checked) return;
+      if (!SpeechSynthesisUtterance) return;
+      
+      // Stop any current speech
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = parseFloat(document.getElementById('voice-speed').value);
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      
+      window.speechSynthesis.speak(utterance);
+    }
+    
+    // Load voice settings
+    function loadVoiceSettings() {
+      const saved = localStorage.getItem('guru_voice_settings');
+      if (saved) {
+        const settings = JSON.parse(saved);
+        document.getElementById('voice-lang').value = settings.lang || 'en-US';
+        document.getElementById('voice-output').checked = settings.output !== false;
+        document.getElementById('voice-speed').value = settings.speed || 1;
+        document.getElementById('auto-transcribe').checked = settings.transcribe !== false;
+      }
+    }
+    
+    // Save voice settings
+    function saveVoiceSettings() {
+      const settings = {
+        lang: document.getElementById('voice-lang').value,
+        output: document.getElementById('voice-output').checked,
+        speed: document.getElementById('voice-speed').value,
+        transcribe: document.getElementById('auto-transcribe').checked
+      };
+      localStorage.setItem('guru_voice_settings', JSON.stringify(settings));
+    }
+    
+    // Save voice settings when they change
+    document.getElementById('voice-lang').addEventListener('change', saveVoiceSettings);
+    document.getElementById('voice-output').addEventListener('change', saveVoiceSettings);
+    document.getElementById('voice-speed').addEventListener('change', saveVoiceSettings);
+    document.getElementById('auto-transcribe').addEventListener('change', saveVoiceSettings);
+    
+    loadVoiceSettings();
+
+  </script>
+</body>
+</html>
